@@ -3,6 +3,7 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Emails;
+use App\Entity\Tag;
 use App\Enum\LogActionEnum;
 use App\Service\LogService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -11,15 +12,17 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\EmailField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\EntityFilter;
 
 class EmailsCrudController extends AbstractCrudController
 {
 
-    public function __construct(private LogService $logService) {
+    public function __construct(private LogService $logService, private readonly EntityManagerInterface $em) {
 
     }
 
@@ -33,6 +36,15 @@ class EmailsCrudController extends AbstractCrudController
         return [
             IdField::new('id')->hideOnForm(),
             EmailField::new('address')->setLabel('Adresse email'),
+            AssociationField::new('tag')->renderAsHtml()->setLabel('Tag')->onlyOnForms(),
+            TextField::new('tag')
+                ->setLabel('Tag')
+                ->renderAsHtml()
+                ->hideOnForm()
+                ->formatValue(function ($value, $entity) {
+                    /** @var Emails $entity */
+                    return $entity->getTag()->getName();
+                })
         ];
     }
 
@@ -47,9 +59,11 @@ class EmailsCrudController extends AbstractCrudController
 
     public function configureFilters(Filters $filters): Filters
     {
+        $tags = $this->getTags();
         return $filters
             ->add('id')
             ->add('address')
+            ->add(EntityFilter::new('tag'))
             ;
     }
 
@@ -75,5 +89,7 @@ class EmailsCrudController extends AbstractCrudController
         parent::deleteEntity($entityManager, $entityInstance);
     }
 
-
+    private function getTags() {
+        return $this->em->getRepository(Tag::class)->findAll();
+    }
 }

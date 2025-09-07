@@ -16,6 +16,9 @@ class Emails
     #[ORM\Column(length: 150, unique: true)]
     private ?string $address = null;
 
+    #[ORM\ManyToOne(inversedBy: 'emails')]
+    private ?Tag $tag = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -29,6 +32,18 @@ class Emails
     public function setAddress(string $address): static
     {
         $this->address = $address;
+
+        return $this;
+    }
+
+    public function getTag(): ?Tag
+    {
+        return $this->tag;
+    }
+
+    public function setTag(?Tag $tag): static
+    {
+        $this->tag = $tag;
 
         return $this;
     }

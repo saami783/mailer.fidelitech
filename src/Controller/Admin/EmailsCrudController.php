@@ -37,13 +37,13 @@ class EmailsCrudController extends AbstractCrudController
             IdField::new('id')->hideOnForm(),
             EmailField::new('address')->setLabel('Adresse email'),
             AssociationField::new('tag')->renderAsHtml()->setLabel('Tag')->onlyOnForms(),
-            TextField::new('tag')
+            AssociationField::new('tag')
                 ->setLabel('Tag')
                 ->renderAsHtml()
                 ->hideOnForm()
                 ->formatValue(function ($value, $entity) {
                     /** @var Emails $entity */
-                    return $entity->getTag()->getName();
+                    return $entity->getTag()?->getName() ?? '';
                 })
         ];
     }
